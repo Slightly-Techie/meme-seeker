@@ -25,4 +25,5 @@ jobs:
         run: pytest
       - name: Analysing the code with flake8
         run: |
-          flake8 --per-file-ignores="util/logger_tool.py:E501" --per-file-ignores="tests/test_utils.py:E402"
+          flake8 --per-file-ignores="tests/test_utils.py:E402"
+          
