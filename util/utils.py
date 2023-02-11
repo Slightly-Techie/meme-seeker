@@ -1,10 +1,19 @@
+"""
+The tiny stuff
+"""
 import json
 import sys
-from logger_tool import Logger
+import configparser
+from .logger_tool import Logger
 
 
-def load_config(file="config.json"):
-    return json.load(open(file))
+def load_config(section: str, name: str):
+    """Change config from json to ini for configparser"""
+    file = "config.ini"
+    config = configparser.ConfigParser()
+    config.read(file)
+
+    return config[section][name]
 
 
 def save_config(data: dict, file: str):
