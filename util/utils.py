@@ -7,13 +7,20 @@ import configparser
 from .logger_tool import Logger
 
 
-def load_config(section: str, name: str):
+def load_config(section: str, name: str, file="config.ini"):
     """Change config from json to ini for configparser"""
-    file = "config.ini"
-    config = configparser.ConfigParser()
-    config.read(file)
+    try:
+        file = "config.ini"
+        config = configparser.ConfigParser()
+        config.read(file)
 
-    return config[section][name]
+        return config[section][name]
+    except FileNotFoundError as file_err:
+        Logger.debug(file_err)
+        return None
+    except KeyError as key_err:
+        Logger.debug(key_err)
+        return None
 
 
 def save_config(data: dict, file: str):
