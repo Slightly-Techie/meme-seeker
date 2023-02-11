@@ -1,3 +1,6 @@
+"""
+Custom Logger tool
+"""
 import os
 import time
 
@@ -16,9 +19,17 @@ class Logger:
     @classmethod
     def log(cls, log_level: str, messages) -> None:
 
-        output = f"[{time.ctime()}] {log_level}: { ' | '.join([str(msg) for msg in messages])}\n"
+        output = "[{}] {}: {}\n".format(
+            time.ctime(),
+            log_level,
+            ' | '.join([str(msg) for msg in messages])
+        )
+
         if cls.LOG_OUTPUT == "file":
-            with open(os.path.join(os.path.dirname(__file__), "output.log"), "a+") as logfile:
+            with open(
+                os.path.join(
+                    os.path.dirname(__file__),
+                    "output.log"), "a+") as logfile:
                 logfile.write(output)
 
         print(output)
