@@ -25,4 +25,4 @@ jobs:
         run: pytest
       - name: Analysing the code with flake8
         run: |
-          flake8 --per-file-ignores="tests/test_util.py:E402"
+          flake8 --per-file-ignores="app/tests/test_util.py:E402"
