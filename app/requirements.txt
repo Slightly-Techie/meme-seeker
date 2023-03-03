@@ -1,0 +1,8 @@
+tweepy
+psycopg2
+pytest
+requests
+pillow
+sqlalchemy
+boto3
+pika
