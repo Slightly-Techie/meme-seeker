@@ -1,0 +1,8 @@
+
+[flake8]
+exclude =
+  functions.py,
+  __pycache__,
+  tests,
+  test_*,
+
