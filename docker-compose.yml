@@ -1,0 +1,49 @@
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: .
+      args:
+        - DEV=true
+    # restart: always
+    volumes:
+      - ./app:/app
+    command: >
+      sh -c "python db/setup.py && python worker.py"
+    environment:
+      - DB_HOST=db
+      - DB_NAME=devdb
+      - DB_USER=devuser
+      - DB_PASS=changeme
+    depends_on:
+      - db
+      
+
+  db:
+    image: postgres:13-alpine
+    ports:
+      - "5436:5432"
+    volumes:
+      - dev-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=devdb
+      - POSTGRES_USER=devuser
+      - POSTGRES_PASSWORD=changeme
+    depends_on:
+      - rabbitmq
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: 'rabbitmq'
+    ports:
+        - 5672:5672
+        - 15672:15672
+    # volumes:
+    #     - ./data/:/var/lib/rabbitmq/
+    #     - ./log/:/var/log/rabbitmq
+    # networks:
+    #     - rabbitmq_go_net
+
+volumes:
+  dev-data:
