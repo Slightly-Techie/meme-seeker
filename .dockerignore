@@ -1,0 +1,14 @@
+*.json
+.github
+.pytest*
+__pycache__
+tests
+test_*
+.vscode
+.DS_Store
+*.jpg
+*.png
+*.jpeg
+*.gif
+*.mp4
+*.mp3
