@@ -4,9 +4,10 @@ Managing all db operations - postgres
 import os
 # import io
 from uuid import uuid4
+from datetime import datetime
 # from PIL import Image
 import sqlalchemy as db
-from datetime import datetime
+
 # from util.utils import load_config
 from util.logger_tool import Logger
 
@@ -26,22 +27,32 @@ class DbOperations:
         self.metadata = db.MetaData()
 
     def save_image(self, full_data, image_format):
-        """"""
+        """Saving media in DB"""
         self.meme_table = db.Table(
             'meme_table', self.metadata, autoload_with=self.engine
+            )
+        self.keywords_table = db.Table(
+            'keyword', self.metadata, autoload_with=self.engine
             )
         query = db.insert(self.meme_table).values(
             id=uuid4(),
             date_created=datetime.now(),
             name='Test1',
             **full_data,
-            keywords="test, pawpaw"
+        )
+        keyword_insert = db.insert(self.keywords_table).values(
+            id=uuid4(),
+            date_created=datetime.now(),
+            name="Test"
         )
         with self.engine.connect() as conn:
             result = conn.execute(query)
+            k_result = conn.execute(keyword_insert)
+            # query.keywords.add(k_result)
             conn.commit()
             print("Successfully committed")
             Logger.info(result.inserted_primary_key)
+            Logger.info(k_result.inserted_primary_key)
             self.show_image(
                 result.inserted_primary_key, image_format
                 )

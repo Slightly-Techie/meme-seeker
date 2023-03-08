@@ -12,16 +12,16 @@ then
 
     echo "PostgreSQL started"
 fi
-if [ "$QUEUEENGINE" = "rabbitmq" ]
-then
-    echo "Waiting for rabbitmq..."
+# if [ "$QUEUEENGINE" = "rabbitmq" ]
+# then
+#     echo "Waiting for rabbitmq..."
 
-    while ! nc -z rabbitmq 5672; do
-      sleep 1
-    done
+#     while ! nc -z rabbitmq 5672; do
+#       sleep 1
+#     done
 
-    echo "RabbitMQ started"
-fi
+#     echo "RabbitMQ started"
+# fi
 
 exec "$@"
 

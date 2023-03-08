@@ -7,7 +7,7 @@ import pika
 from util.utils import load_config
 from util.logger_tool import Logger
 
-# from app.functions import download_image
+from functions import download_image
 
 
 class StreamWorker(Stream):
@@ -23,9 +23,9 @@ class StreamWorker(Stream):
         json_data = json.loads(raw_data)
         print(json_data)
         Logger.info(raw_data)
-        self.publish_to_queue(raw_data)
-        # response = download_image(json_data)
-        # send_sample_tweet(response)
+        # self.publish_to_queue(raw_data)
+        response = download_image(json_data)
+        send_sample_tweet(response)
 
     def on_request_error(self, status_code):
         print(status_code)
@@ -41,7 +41,7 @@ class StreamWorker(Stream):
         channel = conn.channel()
         channel.basic_publish(
             exchange="",
-            routing_key="produce_meme",
+            routing_key="meme_queue",
             body=data
         )
 

@@ -2,18 +2,33 @@
 Setting up the db and tables
 """
 import os
+from typing import List
 from sqlalchemy import (
     create_engine,
     Column,
-    # Integer,
+    Table,
     String,
-    DateTime, LargeBinary, Text, UUID
+    DateTime, LargeBinary,
+    UUID,
+    ForeignKey,
 )
-from sqlalchemy.ext.declarative import declarative_base
-import pika
+from sqlalchemy.orm import (
+    DeclarativeBase,
+    relationship,
+    Mapped
+)
 
 
-Base = declarative_base()
+class Base(DeclarativeBase):
+    pass
+
+
+association_table = Table(
+    "association_table",
+    Base.metadata,
+    Column("meme_id", ForeignKey("meme_table.id")),
+    Column("keyword_id", ForeignKey("keyword.id"))
+)
 
 
 class MemeData(Base):
@@ -25,21 +40,18 @@ class MemeData(Base):
     image_blob = Column(LargeBinary())
     video_filename = Column(String(300))
     # video_blob = Column(LargeBinary())
-    keywords = Column(Text())
+    keywords: Mapped[List] = relationship(secondary=association_table)
     image_url = Column(String(300))
     video_url = Column(String(300))
     tweet_id = Column(String())
 
 
-def create_queue():
-    """Establish RabbitMQ connection"""
-    conn = pika.BlockingConnection(
-        pika.ConnectionParameters(
-            "rabbitmq"
-        )
-    )
-    channel = conn.channel()
-    channel.queue_declare("produce_meme")
+class Keyword(Base):
+    """Create aa manytomany relation to MemeData table"""
+    __tablename__ = "keyword"
+    id = Column(UUID(), primary_key=True)
+    date_created = Column(DateTime(timezone=True))
+    name = Column(String(300))
 
 
 if __name__ == "__main__":
@@ -52,4 +64,4 @@ if __name__ == "__main__":
     )
     engine = create_engine(path, echo=True)
     Base.metadata.create_all(engine)
-    create_queue()
+    # create_queue()
