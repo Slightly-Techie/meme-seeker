@@ -7,61 +7,47 @@ import shutil
 import uuid
 import boto3
 import requests
-import pika
-# from concurrent.futures import ThreadPoolExecutor
 from db.operations import DbOperations
 # from util.logger_tool import Logger
 from util.utils import load_config
 
 
-def consume_from_queue():
-    """Consume data from RabbitMQ Queue"""
-    conn = pika.BlockingConnection(
-        pika.ConnectionParameters(
-            "rabbitmq"
-        )
-    )
-    channel = conn.channel()
-    new_message = channel.basic_consume(
-        queue="produce_meme",
-        auto_ack=True
-        )
-    print(new_message)
-
-
 def download_image(data):
     """get the image file from the url"""
-    media_url = data["entities"]["media"][0]["media_url"]
-    response = requests.get(media_url)
-    video_filename = None
-    if data["extended_entities"]["media"][0]["video_info"]:
-        video_url = data["extended_entities"]["media"][0][
-                    "video_info"
-                    ]["variants"][0]["url"]
-        video_filename = save_video(
-            video_url
-        )
-        video_thread = Thread(
-            target=push_to_s3, args=(video_filename,))
-        video_thread.start()
-        video_thread.join()
+    if data["entities"]["media"][0]["media_url"]:
+        media_url = data["entities"]["media"][0]["media_url"]
+        response = requests.get(media_url)
+        video_filename = None
+        if data["extended_entities"]["media"][0]["video_info"]:
+            video_url = data["extended_entities"]["media"][0][
+                        "video_info"
+                        ]["variants"][0]["url"]
+            video_filename = save_video(
+                video_url
+            )
+            video_thread = Thread(
+                target=push_to_s3, args=(video_filename,))
+            video_thread.start()
+            video_thread.join()
 
-    image_file = response.content
-    img_format = mimetypes.guess_extension(
-        response.headers.get('content-type').split(";")[0]
-    )
-    db_data = {
-        "image_blob": image_file,
-        "video_filename": video_filename,
-        "image_url": media_url,
-        "video_url": video_url,
-        "tweet_id": data["id_str"]
-    }
-
-    DbOperations().save_image(
-        db_data, img_format
+        image_file = response.content
+        img_format = mimetypes.guess_extension(
+            response.headers.get('content-type').split(";")[0]
         )
-    return [data["id_str"], video_filename]
+        db_data = {
+            "image_blob": image_file,
+            "video_filename": video_filename,
+            "image_url": media_url,
+            "video_url": video_url,
+            "tweet_id": data["id_str"]
+        }
+
+        DbOperations().save_image(
+            db_data, img_format
+            )
+        return [data["id_str"], video_filename]
+    else:
+        pass
 
 
 def save_video(video_url):
