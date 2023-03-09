@@ -66,7 +66,7 @@ class DbOperations:
         )
         with self.engine.connect() as conn:
             row = conn.execute(query).first()
-            print(row)
+            Logger.info(row)
 
             # image_data = row[3]
             # filename = uuid4().hex
