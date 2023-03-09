@@ -45,6 +45,18 @@ class StreamWorker(Stream):
             body=data
         )
 
+    def on_disconnect(self):
+        ''' Restart stream'''
+        username = [load_config("twitter", "username")]
+        stream = StreamWorker(
+            load_config("twitter", "consumer_key"),
+            load_config("twitter", "consumer_secret"),
+            load_config("twitter", "access_token_default"),
+            load_config("twitter", "access_secret_default")
+            )
+        stream.filter(track=username, threaded=True)
+
+
 
 def send_sample_tweet(tweet_data):
     """Respond to tweet"""
