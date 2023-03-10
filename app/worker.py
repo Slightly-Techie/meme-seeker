@@ -66,14 +66,15 @@ class StreamWorker(Stream):
         ''' Restart stream'''
         start_tweet_stream()
 
-        # username = [load_config("twitter", "username")]
-        # stream = StreamWorker(
-        #     load_config("twitter", "consumer_key"),
-        #     load_config("twitter", "consumer_secret"),
-        #     load_config("twitter", "access_token_default"),
-        #     load_config("twitter", "access_secret_default")
-        #     )
-        # stream.filter(track=username, threaded=True)
+    # def on_connection_error(self, err):
+    #     # Handle when connection times ouut
+    #     print(err)
+    #     super().on_connection_error()
+    #     start_tweet_stream()
+
+    # def on_exception(self, exception):
+    #     super().on_exception(exception)
+    #     start_tweet_stream()
 
 
 def start_tweet_stream():
@@ -105,15 +106,3 @@ def send_sample_tweet(tweet_data):
 
 if __name__ == "__main__":
     start_tweet_stream()
-
-    # username = load_config("twitter", "username")
-    # stream = StreamWorker(
-    #     consumer_key=consumer_key,
-    #     consumer_secret=consumer_secret,
-    #     access_token=access_token,
-    #     access_token_secret=access_token_secret,
-    #     )
-    # stream.filter(
-    #     track=[username],
-    #     threaded=True
-    # )
