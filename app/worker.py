@@ -85,7 +85,6 @@ def send_sample_tweet(tweet_data):
 
 if __name__ == "__main__":
     username = load_config("twitter", "username")
-    print("cred: ", consumer_key, access_token_secret, access_token, consumer_secret)
     stream = StreamWorker(
         consumer_key=consumer_key,
         consumer_secret=consumer_secret,
