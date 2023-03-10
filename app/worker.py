@@ -38,7 +38,9 @@ class StreamWorker(Stream):
         Logger.info(raw_data)
 
         # Get username of the tweet mention
-        tweet_username = json_data["user"]["screen_name"] if json_data["user"] else "Test User"
+        tweet_username = (
+            json_data["user"]["screen_name"] if json_data["user"] else "Test User"
+        )
 
         if "in_reply_to_status_id_str" in json_data:
             tweet_data = self.get_orginal_tweet(
@@ -101,7 +103,6 @@ def send_sample_tweet(tweet_data):
         Logger.info("Tweet Response sent sucessfully")
     except Exception as tweeting_error:
         Logger.fatal(tweeting_error)
-
 
 
 if __name__ == "__main__":
