@@ -44,7 +44,7 @@ class StreamWorker(Stream):
             tweet_data = json_data
         response = download_image(tweet_data)
         if response is not None:
-            send_sample_tweet(response)
+            send_sample_tweet(json_data)
 
     def on_request_error(self, status_code):
         print(status_code)
@@ -76,7 +76,7 @@ def send_sample_tweet(tweet_data):
     try:
         v1_api.update_status(
             "Done. Have a wonderful day.",
-            in_reply_to_status_id=tweet_data[0]
+            in_reply_to_status_id=tweet_data["id_str"]
         )
         Logger.info("Tweet Response sent sucessfully")
     except Exception as tweeting_error:
@@ -85,6 +85,7 @@ def send_sample_tweet(tweet_data):
 
 if __name__ == "__main__":
     username = load_config("twitter", "username")
+    print("cred: ", consumer_key, access_token_secret, access_token, consumer_secret)
     stream = StreamWorker(
         consumer_key=consumer_key,
         consumer_secret=consumer_secret,

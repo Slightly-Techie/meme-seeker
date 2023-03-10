@@ -15,9 +15,9 @@ from util.logger_tool import Logger
 class DbOperations:
     def __init__(self):
         self.db_name = os.environ.get("DB_NAME", "devdb")
-        self.db_user = os.environ.get("DB_USER")
-        self.db_user_pass = os.environ.get("DB_PASS")
-        self.db_host = os.environ.get("DB_HOST", "db")
+        self.db_user = os.environ.get("DB_USER", "devuser")
+        self.db_user_pass = os.environ.get("DB_PASS", "changeme")
+        self.db_host = os.environ.get("DB_HOST", "localhost:5436")
         path = "postgresql://{}:{}@{}/{}".format(
             self.db_user, self.db_user_pass,
             self.db_host, self.db_name
