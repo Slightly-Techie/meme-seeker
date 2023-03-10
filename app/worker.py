@@ -36,13 +36,17 @@ class StreamWorker(Stream):
         json_data = json.loads(raw_data)
         print(json_data)
         Logger.info(raw_data)
+
+        # Get username of the tweet mention
+        tweet_username = json_data["user"]["screen_name"] if json_data["user"] else "Test User"
+
         if "in_reply_to_status_id_str" in json_data:
             tweet_data = self.get_orginal_tweet(
                 json_data["in_reply_to_status_id_str"]
             )
         else:
             tweet_data = json_data
-        response = download_image(tweet_data)
+        response = download_image(tweet_data, username=tweet_username)
         if response is not None:
             send_sample_tweet(json_data)
 
@@ -60,15 +64,30 @@ class StreamWorker(Stream):
 
     def on_disconnect(self):
         ''' Restart stream'''
-        username = [load_config("twitter", "username")]
-        stream = StreamWorker(
-            load_config("twitter", "consumer_key"),
-            load_config("twitter", "consumer_secret"),
-            load_config("twitter", "access_token_default"),
-            load_config("twitter", "access_secret_default")
-            )
-        stream.filter(track=username, threaded=True)
+        start_tweet_stream()
 
+        # username = [load_config("twitter", "username")]
+        # stream = StreamWorker(
+        #     load_config("twitter", "consumer_key"),
+        #     load_config("twitter", "consumer_secret"),
+        #     load_config("twitter", "access_token_default"),
+        #     load_config("twitter", "access_secret_default")
+        #     )
+        # stream.filter(track=username, threaded=True)
+
+
+def start_tweet_stream():
+    username = load_config("twitter", "username")
+    stream = StreamWorker(
+        consumer_key=consumer_key,
+        consumer_secret=consumer_secret,
+        access_token=access_token,
+        access_token_secret=access_token_secret,
+        )
+    stream.filter(
+        track=[username],
+        threaded=True
+    )
 
 
 def send_sample_tweet(tweet_data):
@@ -83,15 +102,18 @@ def send_sample_tweet(tweet_data):
         Logger.fatal(tweeting_error)
 
 
+
 if __name__ == "__main__":
-    username = load_config("twitter", "username")
-    stream = StreamWorker(
-        consumer_key=consumer_key,
-        consumer_secret=consumer_secret,
-        access_token=access_token,
-        access_token_secret=access_token_secret,
-        )
-    stream.filter(
-        track=[username],
-        threaded=True
-    )
+    start_tweet_stream()
+
+    # username = load_config("twitter", "username")
+    # stream = StreamWorker(
+    #     consumer_key=consumer_key,
+    #     consumer_secret=consumer_secret,
+    #     access_token=access_token,
+    #     access_token_secret=access_token_secret,
+    #     )
+    # stream.filter(
+    #     track=[username],
+    #     threaded=True
+    # )

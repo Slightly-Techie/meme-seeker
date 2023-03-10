@@ -26,7 +26,7 @@ class DbOperations:
         # self.conn = self.engine.connect()
         self.metadata = db.MetaData()
 
-    def save_image(self, full_data, image_format):
+    def save_image(self, full_data, image_format, username="Test"):
         """Saving media in DB"""
         self.meme_table = db.Table(
             'meme_table', self.metadata, autoload_with=self.engine
@@ -37,13 +37,13 @@ class DbOperations:
         query = db.insert(self.meme_table).values(
             id=uuid4(),
             date_created=datetime.now(),
-            name='Test1',
+            name=username,
             **full_data,
         )
         keyword_insert = db.insert(self.keywords_table).values(
             id=uuid4(),
             date_created=datetime.now(),
-            name="Test"
+            name=username
         )
         with self.engine.connect() as conn:
             result = conn.execute(query)

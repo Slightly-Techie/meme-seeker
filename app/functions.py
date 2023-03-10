@@ -13,7 +13,7 @@ from util.logger_tool import Logger
 from util.utils import load_config
 
 
-def download_image(data):
+def download_image(data, username=""):
     """get the image file from the url"""
     Logger.info("Media download in progress.....")
     if "media" in data["entities"]:
@@ -49,7 +49,7 @@ def download_image(data):
         Logger.info("Data for database: {}".format(db_data))
 
         DbOperations().save_image(
-            db_data, img_format
+            db_data, img_format, username=username
             )
         return [data["id_str"], video_filename]
     else:
