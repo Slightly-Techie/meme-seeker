@@ -11,7 +11,7 @@ def load_config(section: str, name: str, file="config.ini"):
     """Change config from json to ini for configparser"""
     try:
         file = "app/config.ini"
-        config = configparser.ConfigParser()
+        config = configparser.RawConfigParser()
         config.read(file)
 
         return config[section][name]
