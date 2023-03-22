@@ -1,7 +1,6 @@
 """
 Functions for various actions to perform on the image/gif/video
 """
-import os
 from threading import Thread
 import mimetypes
 import shutil
@@ -13,18 +12,15 @@ from util.logger_tool import Logger
 from util.utils import load_config
 
 
-def download_image(data):
+def download_image(data, tweet_id):
     """get the image file from the url"""
     Logger.info("Media download in progress.....")
-    if "media" in data["entities"]:
-        media_url = data["entities"]["media"][0]["media_url"]
+    if "media" in data["includes"]:
+        media_url = data["includes"]["media"][0]["preview_image_url"]
         response = requests.get(media_url)
         video_filename = None
-        video_url = None
-        if "video_info" in data["extended_entities"]["media"][0]:
-            video_url = data["extended_entities"][
-                "media"
-                ][0]["video_info"]["variants"][0]["url"]
+        if "variants" in data["includes"]["media"][0]:
+            video_url = data["includes"]["media"][0]["variants"][0]["url"]
             video_filename = save_video(
                 video_url
             )
@@ -32,8 +28,6 @@ def download_image(data):
                 target=push_to_s3, args=(video_filename,))
             video_thread.start()
             video_thread.join()
-            # Remove the video file after uploading to S3
-            os.remove(video_filename)
 
         image_file = response.content
         img_format = mimetypes.guess_extension(
@@ -44,14 +38,13 @@ def download_image(data):
             "video_filename": video_filename,
             "image_url": media_url,
             "video_url": video_url,
-            "tweet_id": data["id_str"]
+            "tweet_id": tweet_id
         }
-        Logger.info("Data for database: {}".format(db_data))
 
         DbOperations().save_image(
             db_data, img_format
             )
-        return [data["id_str"], video_filename]
+        return [tweet_id, video_filename]
     else:
         pass
 
