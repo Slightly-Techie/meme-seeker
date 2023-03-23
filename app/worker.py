@@ -2,28 +2,32 @@
 worker that listens for mentions goes here
 """
 import json
-from tweepy import (
-    Stream,
-    API, OAuthHandler
-)
+from tweepy import StreamingClient, Client, StreamRule
 # import pika
+import requests
 from util.utils import load_config
 from util.logger_tool import Logger
 
 from functions import download_image
 
-
+bearer_token = load_config("twitter", "bearer_token")
 consumer_key = load_config("twitter", "consumer_key")
 consumer_secret = load_config("twitter", "consumer_secret")
 access_token = load_config("twitter", "access_token_default")
 access_token_secret = load_config("twitter", "access_secret_default")
+base_url = load_config("twitter", "base_url")
 
-v1_auth = OAuthHandler(consumer_key, consumer_secret)
-v1_auth.set_access_token(access_token, access_token_secret)
-v1_api = API(v1_auth)
+tweet_client = Client(
+    bearer_token=bearer_token,
+    consumer_key=consumer_key,
+    consumer_secret=consumer_secret,
+    access_token=access_token,
+    access_token_secret=access_token_secret,
+    wait_on_rate_limit=True
+    )
 
 
-class StreamWorker(Stream):
+class StreamWorker(StreamingClient):
     """Main worker that streams and listens for mentions"""
 
     def on_connect(self):
@@ -42,13 +46,16 @@ class StreamWorker(Stream):
             json_data["user"]["screen_name"] if json_data["user"] else "Test User"
         )
 
-        if "in_reply_to_status_id_str" in json_data:
+        # self.publish_to_queue(raw_data)
+        if "referenced_tweets" in json_data["data"]:
             tweet_data = self.get_orginal_tweet(
-                json_data["in_reply_to_status_id_str"]
+                json_data["data"]["referenced_tweets"][0]["id"]
             )
         else:
             tweet_data = json_data
-        response = download_image(tweet_data, username=tweet_username)
+
+        response = download_image(tweet_data, json_data["data"]["id"], username=tweet_username)
+
         if response is not None:
             send_sample_tweet(json_data)
 
@@ -58,37 +65,71 @@ class StreamWorker(Stream):
 
     def get_orginal_tweet(self, tweet_id):
         Logger.info(tweet_id)
-        original_tweet = v1_api.get_status(tweet_id)
-        Logger.info(json.dumps(original_tweet._json))
-        Logger.info(original_tweet.text)
-
-        return original_tweet._json
+        original_tweet_res = requests.get(
+            base_url + "/tweets/{}".format(tweet_id),
+            params={
+                "expansions": "attachments.media_keys,entities.mentions.username",
+                "tweet.fields": "entities",
+                "media.fields": "variants,preview_image_url"
+            },
+            headers={"Authorization": "Bearer {}".format(bearer_token)}
+        )
+        original_tweet = original_tweet_res.json()
+        Logger.info(original_tweet["data"])
+        Logger.info(json.dumps(original_tweet))
+        return original_tweet
 
     def on_disconnect(self):
         ''' Restart stream'''
         start_tweet_stream()
+
 
     # def on_connection_error(self, err):
     #     # Handle when connection times ouut
     #     print(err)
     #     super().on_connection_error()
     #     start_tweet_stream()
-
+    
     # def on_exception(self, exception):
     #     super().on_exception(exception)
     #     start_tweet_stream()
 
 
+def send_sample_tweet(tweet_data):
+    """Respond to tweet"""
+    try:
+        tweet_client.create_tweet(
+            text="Done. Have a wonderful day.",
+            in_reply_to_tweet_id=tweet_data[0],
+            )
+        Logger.info("Tweet Response sent sucessfully")
+    except Exception as tweeting_error:
+        Logger.fatal(tweeting_error)
+
+
+
 def start_tweet_stream():
     username = load_config("twitter", "username")
     stream = StreamWorker(
-        consumer_key=consumer_key,
-        consumer_secret=consumer_secret,
-        access_token=access_token,
-        access_token_secret=access_token_secret,
+        bearer_token=bearer_token
         )
+    stream.add_rules(StreamRule(username))
     stream.filter(
-        track=[username],
+        expansions=[
+            "referenced_tweets.id",
+            "referenced_tweets.id.author_id",
+            "attachments.media_keys"
+        ],
+        user_fields=[
+            "entities",
+        ],
+        media_fields=[
+            "preview_image_url",
+            "variants"
+        ],
+        tweet_fields=[
+            "entities"
+        ],
         threaded=True
     )
 
