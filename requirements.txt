@@ -5,4 +5,5 @@ requests
 pillow
 sqlalchemy
 boto3
-pikaflake8>=3.9.2,<3.10
+pika
+flake8>=3.9.2,<3.10
