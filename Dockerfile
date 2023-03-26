@@ -8,8 +8,8 @@ ENV QUEUEENGINE rabbitmq
 
 COPY ./requirements.txt /tmp/requirements.txt
 COPY ./app /app
-WORKDIR /app
 COPY ./scripts /scripts
+WORKDIR /app
 
 RUN python -m venv /py && \
     /py/bin/pip install --upgrade pip && \

@@ -2,8 +2,6 @@
 .github
 .pytest*
 __pycache__
-tests
-test_*
 .vscode
 .DS_Store
 *.jpg
