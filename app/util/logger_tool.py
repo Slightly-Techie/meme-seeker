@@ -1,7 +1,6 @@
 """
 Custom Logger tool
 """
-import os
 import time
 
 
