@@ -10,13 +10,8 @@ from .logger_tool import Logger
 def load_config(section: str, name: str, file="config.ini"):
     """Change config from json to ini for configparser"""
     try:
-<<<<<<< HEAD
         file = file
-        config = configparser.ConfigParser()
-=======
-        file = "app/config.ini"
         config = configparser.RawConfigParser()
->>>>>>> TBS/save-media
         config.read(file)
 
         return config[section][name]

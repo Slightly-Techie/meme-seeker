@@ -43,7 +43,7 @@ class StreamWorker(StreamingClient):
 
         # Get username of the tweet mention
         tweet_username = (
-            json_data["user"]["screen_name"] if json_data["user"] else "Test User"
+            json_data["includes"]["users"][0]["username"] if json_data["includes"]["users"][0] else "Test User"
         )
 
         # self.publish_to_queue(raw_data)
@@ -75,7 +75,7 @@ class StreamWorker(StreamingClient):
             headers={"Authorization": "Bearer {}".format(bearer_token)}
         )
         original_tweet = original_tweet_res.json()
-        Logger.info(original_tweet["data"])
+        # Logger.info(original_tweet["data"])
         Logger.info(json.dumps(original_tweet))
         return original_tweet
 
@@ -89,7 +89,7 @@ class StreamWorker(StreamingClient):
     #     print(err)
     #     super().on_connection_error()
     #     start_tweet_stream()
-    
+
     # def on_exception(self, exception):
     #     super().on_exception(exception)
     #     start_tweet_stream()
@@ -100,7 +100,7 @@ def send_sample_tweet(tweet_data):
     try:
         tweet_client.create_tweet(
             text="Done. Have a wonderful day.",
-            in_reply_to_tweet_id=tweet_data[0],
+            in_reply_to_tweet_id=tweet_data["data"]["id"],
             )
         Logger.info("Tweet Response sent sucessfully")
     except Exception as tweeting_error:
