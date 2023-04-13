@@ -134,17 +134,5 @@ def start_tweet_stream():
     )
 
 
-def send_sample_tweet(tweet_data):
-    """Respond to tweet"""
-    try:
-        v1_api.update_status(
-            "Done. Have a wonderful day.",
-            in_reply_to_status_id=tweet_data["id_str"]
-        )
-        Logger.info("Tweet Response sent sucessfully")
-    except Exception as tweeting_error:
-        Logger.fatal(tweeting_error)
-
-
 if __name__ == "__main__":
     start_tweet_stream()
