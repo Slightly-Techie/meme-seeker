@@ -1,4 +1,4 @@
-tweepy
+tweepy==4.13.0
 psycopg2
 pytest
 requests
@@ -6,3 +6,4 @@ pillow
 sqlalchemy
 boto3
 pika
+flake8>=3.9.2,<3.10
