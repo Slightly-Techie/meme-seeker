@@ -9,7 +9,7 @@ from datetime import datetime
 import sqlalchemy as db
 
 # from util.utils import load_config
-from ..util.logger_tool import Logger
+from util.logger_tool import Logger
 
 
 class DbOperations:

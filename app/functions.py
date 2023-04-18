@@ -7,9 +7,9 @@ import shutil
 import uuid
 import boto3
 import requests
-from .db.operations import DbOperations
-from .util.logger_tool import Logger
-from .util.utils import load_config
+from db.operations import DbOperations
+from util.logger_tool import Logger
+from util.utils import load_config
 
 
 

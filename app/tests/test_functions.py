@@ -1,6 +1,8 @@
 import pytest
+import boto3
+from app.util.utils import load_config
 from unittest.mock import patch, MagicMock
-from app.functions import download_image, save_video, push_to_s3
+from ..functions import download_image, save_video, push_to_s3
 from moto import mock_s3
 
 request_result = MagicMock()
@@ -49,12 +51,14 @@ def test_save_video(request_mock, shutil_mock):
 @mock_s3
 def test_push_to_s3():
 	filename = 'e892ede7dcfb4a599a053e4e17098788.mp4'
+	conn = boto3.resource("s3", region_name="us-east-1")
 
-	push_to_s3(filename)
+	bucket_name = load_config(
+		"aws_credentials", "aws_storage_bucket"
+	)
 
-
-
-
+	conn.create_bucket(Bucket=bucket_name)
 	
+	push_to_s3(filename)
 
 	
