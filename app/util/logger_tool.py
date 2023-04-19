@@ -1,6 +1,7 @@
 """
 Custom Logger tool
 """
+import os
 import time
 
 
@@ -25,7 +26,10 @@ class Logger:
         )
 
         if cls.LOG_OUTPUT == "file":
-            with open("/var/log/output.log", "a+") as logfile:
+            with open(
+                os.path.join(
+                    os.path.dirname(__file__),
+                    "output.log"), "a+") as logfile:
                 logfile.write(output)
 
         print(output)

@@ -40,6 +40,12 @@ class StreamWorker(StreamingClient):
         json_data = json.loads(raw_data)
         print(json_data)
         Logger.info(raw_data)
+
+        # Get username of the tweet mention
+        tweet_username = (
+            json_data["includes"]["users"][0]["username"] if json_data["includes"]["users"][0] else "Test User"
+        )
+
         # self.publish_to_queue(raw_data)
         if "referenced_tweets" in json_data["data"]:
             tweet_data = self.get_orginal_tweet(
@@ -47,9 +53,11 @@ class StreamWorker(StreamingClient):
             )
         else:
             tweet_data = json_data
-        response = download_image(tweet_data, json_data["data"]["id"])
+
+        response = download_image(tweet_data, json_data["data"]["id"], username=tweet_username)
+
         if response is not None:
-            send_sample_tweet(response)
+            send_sample_tweet(json_data)
 
     def on_request_error(self, status_code):
         print(status_code)
@@ -67,9 +75,24 @@ class StreamWorker(StreamingClient):
             headers={"Authorization": "Bearer {}".format(bearer_token)}
         )
         original_tweet = original_tweet_res.json()
-        Logger.info(original_tweet["data"])
+        # Logger.info(original_tweet["data"])
         Logger.info(json.dumps(original_tweet))
         return original_tweet
+
+    def on_disconnect(self):
+        ''' Restart stream'''
+        start_tweet_stream()
+
+
+    # def on_connection_error(self, err):
+    #     # Handle when connection times ouut
+    #     print(err)
+    #     super().on_connection_error()
+    #     start_tweet_stream()
+
+    # def on_exception(self, exception):
+    #     super().on_exception(exception)
+    #     start_tweet_stream()
 
 
 def send_sample_tweet(tweet_data):
@@ -77,14 +100,15 @@ def send_sample_tweet(tweet_data):
     try:
         tweet_client.create_tweet(
             text="Done. Have a wonderful day.",
-            in_reply_to_tweet_id=tweet_data[0],
+            in_reply_to_tweet_id=tweet_data["data"]["id"],
             )
         Logger.info("Tweet Response sent sucessfully")
     except Exception as tweeting_error:
         Logger.fatal(tweeting_error)
 
 
-if __name__ == "__main__":
+
+def start_tweet_stream():
     username = load_config("twitter", "username")
     stream = StreamWorker(
         bearer_token=bearer_token
@@ -108,3 +132,7 @@ if __name__ == "__main__":
         ],
         threaded=True
     )
+
+
+if __name__ == "__main__":
+    start_tweet_stream()

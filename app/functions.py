@@ -12,13 +12,15 @@ from util.logger_tool import Logger
 from util.utils import load_config
 
 
-def download_image(data, tweet_id):
+
+def download_image(data, tweet_id, username=""):
     """get the image file from the url"""
     Logger.info("Media download in progress.....")
     if "media" in data["includes"]:
-        media_url = data["includes"]["media"][0]["preview_image_url"]
+        media_url = data["data"]["entities"]["urls"][0]["url"]
         response = requests.get(media_url)
         video_filename = None
+        video_url = None
         if "variants" in data["includes"]["media"][0]:
             video_url = data["includes"]["media"][0]["variants"][0]["url"]
             video_filename = save_video(
@@ -42,7 +44,7 @@ def download_image(data, tweet_id):
         }
 
         DbOperations().save_image(
-            db_data, img_format
+            db_data, img_format, username=username
             )
         return [tweet_id, video_filename]
     else:

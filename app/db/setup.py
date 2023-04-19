@@ -56,9 +56,9 @@ class Keyword(Base):
 
 if __name__ == "__main__":
     db_name = os.environ.get("DB_NAME", "devdb")
-    db_user = os.environ.get("DB_USER")
-    db_user_pass = os.environ.get("DB_PASS")
-    db_host = os.environ.get("DB_HOST", "db")
+    db_user = os.environ.get("DB_USER", "devuser")
+    db_user_pass = os.environ.get("DB_PASS", "changeme")
+    db_host = os.environ.get("DB_HOST", "localhost:5436")
     path = "postgresql://{}:{}@{}/{}".format(
         db_user, db_user_pass, db_host, db_name
     )
