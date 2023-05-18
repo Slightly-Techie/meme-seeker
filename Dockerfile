@@ -15,7 +15,7 @@ RUN python -m venv /py && \
     /py/bin/pip install --upgrade pip && \
     apk add --update --no-cache postgresql-client && \
     apk add --update --no-cache --virtual .tmp-build-deps \
-    build-base postgresql-dev musl-dev && \
+    build-base postgresql-dev musl-dev libffi-dev && \
     /py/bin/pip install -r /tmp/requirements.txt && \
     rm -rf /tmp && \
     apk del .tmp-build-deps && \
@@ -26,6 +26,7 @@ RUN python -m venv /py && \
     chmod -R +x /scripts && \
     touch /var/log/output.log && \
     chown -R meme-user:meme-user /var/log/output.log && \
+    chown -R meme-user:meme-user /app && \
     chmod 755 -R /var/log/output.log
     
 
