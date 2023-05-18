@@ -61,8 +61,8 @@ def get_image_file(tweet_text):
     """get the image blob and construct the image"""
     print(tweet_text)
     tweet_tag = "".join(tweet_text.split()[2])
-    image_blob = DbOperations().get_image(tweet_tag)
-    return image_blob
+    image_blob, image_filenanme = DbOperations().get_image(tweet_tag)
+    return image_blob, image_filenanme
 
 
 def save_video(video_url):

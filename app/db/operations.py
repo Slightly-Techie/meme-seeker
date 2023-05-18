@@ -77,13 +77,13 @@ class DbOperations:
                 Logger.info(img_data)
                 if img_data:
                     Logger.info("Got some image data")
-                    return [img_data.image_blob, img_data.image_filename]
+                    return img_data.image_blob, img_data.image_filename
                 else:
                     Logger.debug("Nothing")
-                    return None
+                    return None, None
         else:
             Logger.debug("Found no match")
-            return None
+            return None, None
 
     def show_image(self, image_id, image_format):
         """Read data from db and show image"""
