@@ -8,7 +8,7 @@ import requests
 from util.utils import load_config
 from util.logger_tool import Logger
 
-from functions import download_image
+from functions import download_image, get_image_file
 
 bearer_token = load_config("twitter", "bearer_token")
 consumer_key = load_config("twitter", "consumer_key")
@@ -48,16 +48,27 @@ class StreamWorker(StreamingClient):
 
         # self.publish_to_queue(raw_data)
         if "referenced_tweets" in json_data["data"]:
-            tweet_data = self.get_orginal_tweet(
-                json_data["data"]["referenced_tweets"][0]["id"]
-            )
+            tweet_text = json_data["data"]["text"]
+            if tweet_text.split()[1] == "get":
+                print(tweet_text)
+                img_blob = get_image_file(
+                    tweet_text
+                )
+                media_id = upload_media_v1(img_blob)
+                tweet_with_image(media_id, json_data["data"]["id"])
+            else:
+                tweet_data = self.get_orginal_tweet(
+                    json_data["data"]["referenced_tweets"][0]["id"]
+                )
+                response = download_image(
+                    tweet_data, json_data["data"]["id"],
+                    tweet_text=tweet_text
+                    )
+
+                if response is not None:
+                    send_sample_tweet(json_data)
         else:
-            tweet_data = json_data
-
-        response = download_image(tweet_data, json_data["data"]["id"], username=tweet_username)
-
-        if response is not None:
-            send_sample_tweet(json_data)
+            pass
 
     def on_request_error(self, status_code):
         print(status_code)
@@ -83,7 +94,6 @@ class StreamWorker(StreamingClient):
         ''' Restart stream'''
         start_tweet_stream()
 
-
     # def on_connection_error(self, err):
     #     # Handle when connection times ouut
     #     print(err)
@@ -93,6 +103,30 @@ class StreamWorker(StreamingClient):
     # def on_exception(self, exception):
     #     super().on_exception(exception)
     #     start_tweet_stream()
+
+
+def upload_media_v1(image_data):
+    """Using v1 endpoint to upload media
+      use the ID from response in tweet"""
+    upload_url = load_config("twitter", "v1_base_url")
+    Logger.info("Uploading the image on v1 API")
+    res = requests.post(
+        upload_url+"&oauth_consumer_key=jVrzCLQoVGojhXcvEIQNCkYLX&oauth_token=3427626623-JtzlAti81jlhpBvcoSw3wnrITsiDg2Xo6K9BqBP&oauth_signature_method=HMAC-SHA1&oauth_timestamp=1684253500&oauth_nonce=W3bDP43nMDx&oauth_version=1.0&oauth_signature=UX0ZFW2ItDLiXfdnvoqp2QfQQj4%3D'",
+        {"media_data": image_data}
+    )
+    Logger.info(res.headers)
+    Logger.info(res.json())
+    return res.json()["media_id_string"]
+
+
+def tweet_with_image(media_id, tweet_id):
+    """Tweet with image ID"""
+    Logger.info("Sending the tweet with image")
+    tweet_client.create_tweet(
+        text="Here is your image.",
+        in_reply_to_tweet_id=tweet_id,
+        media_ids=[media_id]
+    )
 
 
 def send_sample_tweet(tweet_data):
@@ -105,7 +139,6 @@ def send_sample_tweet(tweet_data):
         Logger.info("Tweet Response sent sucessfully")
     except Exception as tweeting_error:
         Logger.fatal(tweeting_error)
-
 
 
 def start_tweet_stream():
