@@ -7,3 +7,4 @@ sqlalchemy
 boto3
 pika
 flake8>=3.9.2,<3.10
+moto[s3]
