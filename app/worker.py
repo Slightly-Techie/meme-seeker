@@ -2,13 +2,14 @@
 worker that listens for mentions goes here
 """
 import json
+import io
+from PIL import Image
 from tweepy import (
     StreamingClient, Client, StreamRule, API,
-    OAuthHandler
+    OAuthHandler, parsers
 )
 # import pika
 import requests
-from requests_oauthlib import OAuth1
 from util.utils import load_config
 from util.logger_tool import Logger
 
@@ -114,12 +115,12 @@ def upload_media_v1(image_data, filename):
       use the ID from response in tweet"""
     auth = OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_token, access_token_secret)
-    api = API(auth)
+    api = API(auth, parser=parsers.JSONParser())
     Logger.info("Uploading the image on v1 API")
+    image = Image.open(io.BytesIO(image_data))
+    image.save(filename)
     res = api.media_upload(
-        filename=filename,
-        file=image_data,
-        media_category="tweet_image"
+        filename
     )
     Logger.info(res)
     return res["media_id_string"]
