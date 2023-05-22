@@ -3,6 +3,7 @@ worker that listens for mentions goes here
 """
 import json
 import io
+import os
 from PIL import Image
 from tweepy import (
     StreamingClient, Client, StreamRule, API,
@@ -60,7 +61,7 @@ class StreamWorker(StreamingClient):
                     tweet_text
                 )
                 media_id = upload_media_v1(img_blob, filename)
-                tweet_with_image(media_id, json_data["data"]["id"])
+                tweet_with_image(media_id, json_data["data"]["id"], filename)
             else:
                 tweet_data = self.get_orginal_tweet(
                     json_data["data"]["referenced_tweets"][0]["id"]
@@ -126,14 +127,19 @@ def upload_media_v1(image_data, filename):
     return res["media_id_string"]
 
 
-def tweet_with_image(media_id, tweet_id):
+def tweet_with_image(media_id, tweet_id, filename):
     """Tweet with image ID"""
-    Logger.info("Sending the tweet with image")
-    tweet_client.create_tweet(
-        text="Here is your image.",
-        in_reply_to_tweet_id=tweet_id,
-        media_ids=[media_id]
-    )
+    try:
+        Logger.info("Sending the tweet with image")
+        tweet_client.create_tweet(
+            text="Here is your image.",
+            in_reply_to_tweet_id=tweet_id,
+            media_ids=[media_id]
+        )
+    except Exception as tweet_excpetion:
+        Logger.debug(tweet_excpetion)
+    finally:
+        os.remove(filename)
 
 
 def send_sample_tweet(tweet_data):

@@ -1,12 +1,13 @@
 #!/bin/sh
 
 set -e 
+# meme-seeker-db.internal
 
 if [ "$DATABASE" = "postgres" ]
 then
     echo "Waiting for postgres..."
 
-    while ! nc -z db 5432; do
+    while ! nc -z $DB_HOST 5432; do
       sleep 1
     done
 
@@ -22,6 +23,8 @@ fi
 
 #     echo "RabbitMQ started"
 # fi
+
+# python db/setup.py && python worker.py
 
 exec "$@"
 

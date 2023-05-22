@@ -27,6 +27,7 @@ RUN python -m venv /py && \
     touch /var/log/output.log && \
     chown -R meme-user:meme-user /var/log/output.log && \
     chown -R meme-user:meme-user /app && \
+    chmod 755 -R /app && \
     chmod 755 -R /var/log/output.log
     
 

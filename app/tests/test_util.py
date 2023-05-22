@@ -2,7 +2,7 @@
 Test Cases for the functinos in utils
 """
 import pytest
-from util.utils import load_config
+from ..util.utils import load_config
 
 
 def test_load_config_success():
