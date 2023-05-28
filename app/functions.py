@@ -60,9 +60,30 @@ def download_image(data, tweet_id, tweet_text):
 def get_image_file(tweet_text):
     """get the image blob and construct the image"""
     print(tweet_text)
-    tweet_tag = "".join(tweet_text.split()[2])
+    tweet_tag = "".join(tweet_text.split()[2:])
     image_blob, image_filenanme = DbOperations().get_image(tweet_tag)
     return image_blob, image_filenanme
+
+
+def get_s3_video_file(tweet_text):
+    """Retrieve image from S3"""
+    tweet_tag = "".join(tweet_text.split()[2:])
+    video_filenanme = DbOperations().get_video_filename(tweet_tag)
+    bucket_name = load_config(
+        "aws_credentials", "aws_storage_bucket"
+    )
+    s3_client = boto3.resource(
+        "s3",
+        aws_access_key_id=load_config(
+            "aws_credentials", "aws_access_key"),
+        aws_secret_access_key=load_config(
+            "aws_credentials", "aws_secret_access_key"
+        )
+    )
+    s3_client.meta.client.download_file(
+        bucket_name, video_filenanme, video_filenanme
+        )
+    return video_filenanme
 
 
 def save_video(video_url):

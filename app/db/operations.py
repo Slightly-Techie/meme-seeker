@@ -24,9 +24,22 @@ class DbOperations:
         # local_db = self.session
         Logger.info("Save data in database initiated")
         # Logger.info(full_data)
-        if self.duplicate_validation(full_data["image_hash_digest"]):
+        duplicate_id = self.duplicate_validation(
+            full_data["image_hash_digest"]
+            )
+        if duplicate_id:
             Logger.info("Media already exists in the Database")
-            return "Image exists"
+            keywords_record = Keyword(
+                id=uuid4(),
+                date_created=datetime.now(),
+                name=keyword_tag,
+                meme_id=duplicate_id
+                )
+            self.session.add(keywords_record)
+            self.session.commit()
+            Logger.info("Data Commited succesfully")
+
+            return True
         else:
             keywords_record = Keyword(
                 id=uuid4(),
@@ -50,15 +63,14 @@ class DbOperations:
 
     def duplicate_validation(self, image_hash_digest):
         """Takes image hash and compares with db records for a match"""
-        stmt = select(MemeData.image_hash_digest)
-        result = False
+        stmt = select(MemeData.image_hash_digest, MemeData.id)
+        # result = False
         for row in self.session.execute(stmt).all():
             print(row.image_hash_digest, image_hash_digest)
             if row.image_hash_digest == image_hash_digest:
-                result = True
-                break
+                return row.id
 
-        return result
+        return None
         # hash_list.append(row.image_hash_digest)
 
     def get_image(self, tweet_tag):
@@ -84,6 +96,30 @@ class DbOperations:
         else:
             Logger.debug("Found no match")
             return None, None
+
+    def get_video_filename(self, tweet_tag):
+        """Get video filename from database"""
+        Logger.info("Getting the video filename from DB")
+        Logger.info(tweet_tag)
+        stmt = select(Keyword.name, Keyword.meme_id)
+        for row in self.session.execute(stmt).all():
+            Logger.info(row.name, tweet_tag)
+            if row.name == tweet_tag:
+                Logger.info("Found a match")
+                img_data = self.session.execute(
+                    select(MemeData.video_filename,
+                           MemeData.id, MemeData.image_filename
+                           )).first()
+                Logger.info(img_data)
+                if img_data:
+                    Logger.info("Got some video data")
+                    return img_data.video_filename
+                else:
+                    Logger.debug("Nothing")
+                    return None
+        else:
+            Logger.debug("Found no match")
+            return None
 
     def show_image(self, image_id, image_format):
         """Read data from db and show image"""

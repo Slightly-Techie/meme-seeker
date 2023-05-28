@@ -2,19 +2,24 @@
 worker that listens for mentions goes here
 """
 import json
-import io
+# import io
 import os
-from PIL import Image
+# from PIL import Image
 from tweepy import (
     StreamingClient, Client, StreamRule, API,
-    OAuthHandler, parsers
+    OAuthHandler,
+    # parsers
 )
 # import pika
 import requests
 from util.utils import load_config
 from util.logger_tool import Logger
 
-from functions import download_image, get_image_file
+from functions import (
+    download_image,
+    # get_image_file,
+    get_s3_video_file
+)
 
 bearer_token = load_config("twitter", "bearer_token")
 consumer_key = load_config("twitter", "consumer_key")
@@ -57,11 +62,16 @@ class StreamWorker(StreamingClient):
             tweet_text = json_data["data"]["text"]
             if tweet_text.split()[1] == "get":
                 print(tweet_text)
-                img_blob, filename = get_image_file(
+                filename = get_s3_video_file(
                     tweet_text
                 )
-                media_id = upload_media_v1(img_blob, filename)
-                tweet_with_image(media_id, json_data["data"]["id"], filename)
+                media_id = upload_media_v1(filename, filename)
+                if media_id:
+                    tweet_with_image(
+                        media_id, json_data["data"]["id"], filename
+                        )
+                else:
+                    Logger.debug("No media id found")
             else:
                 tweet_data = self.get_orginal_tweet(
                     json_data["data"]["referenced_tweets"][0]["id"]
@@ -116,15 +126,18 @@ def upload_media_v1(image_data, filename):
       use the ID from response in tweet"""
     auth = OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_token, access_token_secret)
-    api = API(auth, parser=parsers.JSONParser())
-    Logger.info("Uploading the image on v1 API")
-    image = Image.open(io.BytesIO(image_data))
-    image.save(filename)
-    res = api.media_upload(
-        filename
-    )
-    Logger.info(res)
-    return res["media_id_string"]
+    api = API(auth)
+    Logger.info("Uploading the media named {} on v1 API".format(filename))
+    # image = Image.open(io.BytesIO(image_data))
+    # image.save(filename)
+    if os.path.exists(filename):
+        res = api.media_upload(
+            filename
+        )
+        Logger.info(res)
+        return res.media_id_string
+    else:
+        return None
 
 
 def tweet_with_image(media_id, tweet_id, filename):
@@ -132,7 +145,7 @@ def tweet_with_image(media_id, tweet_id, filename):
     try:
         Logger.info("Sending the tweet with image")
         tweet_client.create_tweet(
-            text="Here is your image.",
+            text=".",
             in_reply_to_tweet_id=tweet_id,
             media_ids=[media_id]
         )
