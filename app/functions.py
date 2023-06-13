@@ -18,7 +18,10 @@ def download_image(data, tweet_id, tweet_text):
     Logger.info("Media download in progress.....")
     if "media" in data["includes"]:
         Logger.info("Found Media. Proceeding to download...")
-        media_url = data["includes"]["media"][0]["preview_image_url"]
+        try:
+            media_url = data["includes"]["media"][0]["preview_image_url"]
+        except KeyError:
+            media_url = data["data"]["entities"]["urls"][0]["url"]
         response = requests.get(media_url)
         video_filename = None
         video_url = None
@@ -47,7 +50,7 @@ def download_image(data, tweet_id, tweet_text):
         }
 
         save_image_res = DbOperations().save_image(
-            db_data, img_format, keyword_tag="".join(tweet_text.split()[1:])
+            db_data, img_format, keyword_tag=tweet_text
             )
         if save_image_res == "Image exists":
             return "Image exists"
@@ -60,15 +63,13 @@ def download_image(data, tweet_id, tweet_text):
 def get_image_file(tweet_text):
     """get the image blob and construct the image"""
     print(tweet_text)
-    tweet_tag = "".join(tweet_text.split()[2:])
-    image_blob, image_filenanme = DbOperations().get_image(tweet_tag)
+    image_blob, image_filenanme = DbOperations().get_image(tweet_text)
     return image_blob, image_filenanme
 
 
 def get_s3_video_file(tweet_text):
     """Retrieve image from S3"""
-    tweet_tag = "".join(tweet_text.split()[2:])
-    video_filenanme = DbOperations().get_video_filename(tweet_tag)
+    video_filenanme = DbOperations().get_video_filename(tweet_text)
     bucket_name = load_config(
         "aws_credentials", "aws_storage_bucket"
     )

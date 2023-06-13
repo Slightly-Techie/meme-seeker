@@ -60,10 +60,16 @@ class StreamWorker(StreamingClient):
         # self.publish_to_queue(raw_data)
         if "referenced_tweets" in json_data["data"]:
             tweet_text = json_data["data"]["text"]
-            if tweet_text.split()[1] == "get":
-                print(tweet_text)
+            text_list = [
+                t for t in tweet_text.split() if not t.startswith("@")
+                ]
+            extract_text = " ".join(text_list)
+            print(text_list)
+            if text_list[0] == "get":
+                extract_text = " ".join(text_list[1:])
+                print(extract_text)
                 filename = get_s3_video_file(
-                    tweet_text
+                    extract_text
                 )
                 media_id = upload_media_v1(filename, filename)
                 if media_id:
@@ -78,7 +84,7 @@ class StreamWorker(StreamingClient):
                 )
                 response = download_image(
                     tweet_data, json_data["data"]["id"],
-                    tweet_text=tweet_text
+                    tweet_text=extract_text
                     )
 
                 if response is not None:
