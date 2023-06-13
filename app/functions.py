@@ -39,6 +39,8 @@ def download_image(data, tweet_id, tweet_text):
         img_format = mimetypes.guess_extension(
             response.headers.get('content-type').split(";")[0]
         )
+        if img_format == ".html":
+            img_format = ".png"
         hash_digest = hash_file(image_file)
         db_data = {
             "image_blob": image_file,
@@ -70,21 +72,24 @@ def get_image_file(tweet_text):
 def get_s3_video_file(tweet_text):
     """Retrieve image from S3"""
     video_filenanme = DbOperations().get_video_filename(tweet_text)
-    bucket_name = load_config(
-        "aws_credentials", "aws_storage_bucket"
-    )
-    s3_client = boto3.resource(
-        "s3",
-        aws_access_key_id=load_config(
-            "aws_credentials", "aws_access_key"),
-        aws_secret_access_key=load_config(
-            "aws_credentials", "aws_secret_access_key"
+    if video_filenanme[-4:] == ".mp4":
+        bucket_name = load_config(
+            "aws_credentials", "aws_storage_bucket"
         )
-    )
-    s3_client.meta.client.download_file(
-        bucket_name, video_filenanme, video_filenanme
+        s3_client = boto3.resource(
+            "s3",
+            aws_access_key_id=load_config(
+                "aws_credentials", "aws_access_key"),
+            aws_secret_access_key=load_config(
+                "aws_credentials", "aws_secret_access_key"
+            )
         )
-    return video_filenanme
+        s3_client.meta.client.download_file(
+            bucket_name, video_filenanme, video_filenanme
+            )
+        return video_filenanme
+    else:
+        return video_filenanme
 
 
 def save_video(video_url):

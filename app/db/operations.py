@@ -2,10 +2,10 @@
 Managing all db operations - postgres
 """
 # import os
-# import io
+import io
 from uuid import uuid4
 from datetime import datetime
-# from PIL import Image
+from PIL import Image
 import sqlalchemy as db
 from sqlalchemy.orm import Session
 from sqlalchemy import select
@@ -108,12 +108,21 @@ class DbOperations:
                 Logger.info("Found a match")
                 img_data = self.session.execute(
                     select(MemeData.video_filename,
-                           MemeData.id, MemeData.image_filename
+                           MemeData.id, MemeData.image_filename,
+                           MemeData.image_blob
                            )).first()
                 Logger.info(img_data)
                 if img_data:
-                    Logger.info("Got some video data")
-                    return img_data.video_filename
+                    Logger.info("Got some data")
+                    if img_data.video_filename:
+                        Logger.info("It's a video")
+                        return img_data.video_filename
+                    else:
+                        Logger.info("No video found. Image found.")
+                        Logger.info("Creating image from blob")
+                        image = Image.open(io.BytesIO(img_data.image_blob))
+                        image.save(img_data.image_filename)
+                        return img_data.image_filename
                 else:
                     Logger.debug("Nothing")
                     return None
