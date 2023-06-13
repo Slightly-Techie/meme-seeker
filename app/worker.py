@@ -61,7 +61,7 @@ class StreamWorker(StreamingClient):
         if "referenced_tweets" in json_data["data"]:
             tweet_text = json_data["data"]["text"]
             text_list = [
-                t for t in tweet_text.split() if not t.startswith("@")
+                t for t in tweet_text.split() if not t.startswith(("@", "http"))
                 ]
             extract_text = " ".join(text_list)
             print(text_list)
